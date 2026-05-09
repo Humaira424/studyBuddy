@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - StudyBuddy</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="ri-book-open-line"></i> StudyBuddy</h2>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#" class="active" data-target="overview"><i class="ri-dashboard-line"></i> Overview</a></li>
+                <li><a href="#" data-target="tasks"><i class="ri-task-line"></i> Study Planner</a></li>
+                <li><a href="#" data-target="notes"><i class="ri-sticky-note-line"></i> Notes</a></li>
+            </ul>
+            <div class="sidebar-footer">
+                <a href="#" id="logoutBtn" style="color: var(--danger-color); display: flex; align-items: center; gap: 8px; text-decoration: none;">
+                    <i class="ri-logout-box-line"></i> Logout
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="topbar">
+                <div>
+                    <h3 id="userNameDisplay" style="color: var(--text-main);">Welcome, Student!</h3>
+                    <p style="font-size: 12px; color: var(--text-muted);" id="currentDateDisplay"></p>
+                </div>
+                <button id="themeToggle" class="theme-toggle">
+                    <i class="ri-moon-line"></i>
+                </button>
+            </div>
+
+            <div class="content-area">
+                <!-- Overview Section -->
+                <section id="overview" class="page-section active">
+                    <div class="dashboard-grid">
+                        <div class="stat-card">
+                            <h3>Total Tasks</h3>
+                            <div class="value" id="totalTasksCount">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Completed</h3>
+                            <div class="value" id="completedTasksCount" style="color: var(--success-color);">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Pending</h3>
+                            <div class="value" id="pendingTasksCount" style="color: var(--warning-color);">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Progress</h3>
+                            <div class="value" id="progressPercentage">0%</div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+                        <div style="background: var(--surface-color); padding: 32px 24px; border-radius: var(--radius); box-shadow: var(--shadow-md);">
+                            <h3 style="margin-bottom: 24px; color: var(--text-main); font-weight: 700;">Task Progress</h3>
+                            <canvas id="progressChart"></canvas>
+                        </div>
+                        
+                        <!-- Focus Timer Feature -->
+                        <div class="timer-widget">
+                            <h3 style="color: var(--text-main); font-weight: 700; font-size: 20px;">Focus Timer</h3>
+                            <p style="font-size: 14px; color: var(--text-muted); margin-top: 8px;">Pomodoro Technique (25 min focus)</p>
+                            <div class="timer-display" id="timerDisplay">25:00</div>
+                            <div class="d-flex gap-16">
+                                <button class="btn" id="startTimerBtn" style="width: auto;"><i class="ri-play-fill"></i> Start</button>
+                                <button class="btn btn-secondary" id="resetTimerBtn" style="width: auto;"><i class="ri-refresh-line"></i> Reset</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Tasks Section -->
+                <section id="tasks" class="page-section">
+                    <div class="d-flex justify-between align-center mb-16">
+                        <h2 style="color: var(--text-main);">Study Planner</h2>
+                        <button class="btn" id="openTaskModalBtn" style="width: auto;">+ Add Task</button>
+                    </div>
+                    
+                    <div class="filters mb-16 d-flex gap-16">
+                        <input type="text" id="searchTask" placeholder="Search tasks..." class="form-group" style="margin: 0; padding: 8px; border-radius: var(--radius); border: 1px solid var(--border-color); flex: 1; background: var(--bg-color); color: var(--text-main);">
+                        <select id="filterPriority" style="padding: 8px; border-radius: var(--radius); border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main);">
+                            <option value="all">All Priorities</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+
+                    <div id="tasksList">
+                        <!-- Tasks will be injected here via JS -->
+                        <p style="text-align: center; color: var(--text-muted); margin-top: 40px;">No tasks found. Add a new task to get started!</p>
+                    </div>
+                </section>
+
+                <!-- Notes Section -->
+                <section id="notes" class="page-section">
+                    <div class="d-flex justify-between align-center mb-16">
+                        <h2 style="color: var(--text-main);">My Notes</h2>
+                        <button class="btn" id="openNoteModalBtn" style="width: auto;">+ Add Note</button>
+                    </div>
+                    <div class="dashboard-grid" id="notesList">
+                        <!-- Notes will be injected here via JS -->
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Task Modal -->
+    <div class="modal-overlay" id="taskModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="taskModalTitle">Add New Task</h3>
+                <button class="btn-close" id="closeTaskModal">&times;</button>
+            </div>
+            <form id="taskForm">
+                <input type="hidden" id="taskId">
+                <div class="form-group">
+                    <label>Subject / Title</label>
+                    <input type="text" id="taskTitle" required placeholder="e.g., Math Chapter 5">
+                </div>
+                <div class="form-group">
+                    <label>Due Date</label>
+                    <input type="date" id="taskDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Priority</label>
+                    <select id="taskPriority">
+                        <option value="high">High</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="low">Low</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">Save Task</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Note Modal -->
+    <div class="modal-overlay" id="noteModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="noteModalTitle">Add New Note</h3>
+                <button class="btn-close" id="closeNoteModal">&times;</button>
+            </div>
+            <form id="noteForm">
+                <input type="hidden" id="noteId">
+                <div class="form-group">
+                    <label>Note Title</label>
+                    <input type="text" id="noteTitle" required placeholder="Physics Formulas">
+                </div>
+                <div class="form-group">
+                    <label>Content</label>
+                    <textarea id="noteContent" rows="5" required placeholder="Write your notes here..."></textarea>
+                </div>
+                <button type="submit" class="btn">Save Note</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase Scripts (Modular Version) -->
+    <script type="module" src="js/firebase.js"></script>
+    <script type="module" src="js/auth.js"></script>
+    <script type="module" src="js/dashboard.js"></script>
+    <script type="module" src="js/tasks.js"></script>
+    <script type="module" src="js/notes.js"></script>
+    <script type="module" src="js/analytics.js"></script>
+</body>
+</html>
