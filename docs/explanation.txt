@@ -58,3 +58,8 @@ CRUD ka matlab hai: Create, Read, Update, Delete.
 - "Logout" Button: `js/auth.js` mein signOut() function ko call karta hai, aur session khatam karke login page par bhej deta hai.
 - Theme Toggle (Moon/Sun icon): `js/dashboard.js` mein dark mode toggle karta hai, aur aapki pasand ko browser ke "localStorage" mein save karta hai taake website band kar ke kholne par wahi theme rahe.
 - "Mark Complete" Button: Yeh green tick wala button task ke status ko pending aur completed ke darmiyan change karta hai (Update operation).
+
+8. Naye Features (Jo baad mein add kiye gaye)
+---------------------------------------------
+- Focus Timer (Pomodoro): `js/dashboard.js` mein iski logic hai. Yeh `setInterval()` use karta hai jo har 1 second (1000 milliseconds) baad time ko 1 second kam karta hai. Jab time 0 ho jata hai to break ki notification aur aawaz aati hai. Yeh student ki concentration barhane ke liye banaya gaya hai.
+- Audio Reminder: `js/tasks.js` mein `checkReminders()` function hai. Agar koi pending task aaj ki date ka ho, to code `new Audio()` function ke zariye ek "Ting" ki sound play karta hai. Autoplay se bachne ke liye browser aapse pehle ek click mangta hai.

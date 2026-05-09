@@ -55,30 +55,19 @@ body {
   align-items: center;
   justify-content: center;
   padding: 20px;
-  /* Beautiful Animated Gradient Background */
-  background: linear-gradient(-45deg, #4f46e5, #9333ea, #ec4899, #3b82f6);
-  background-size: 400% 400%;
-  animation: gradientBG 15s ease infinite;
-}
-
-@keyframes gradientBG {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  /* Clean Solid Background */
+  background-color: var(--bg-color);
 }
 
 .auth-card {
   background: var(--surface-color);
   padding: 40px;
-  border-radius: 20px;
-  box-shadow: var(--shadow-lg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
   width: 100%;
   max-width: 420px;
   text-align: center;
-  backdrop-filter: blur(10px); /* Glassmorphism effect */
-}
-[data-theme="light"] .auth-card {
-    background: rgba(255, 255, 255, 0.95);
+  border: 1px solid var(--border-color);
 }
 
 .auth-card h1 {
@@ -133,7 +122,7 @@ body {
   gap: 8px;
   width: 100%;
   padding: 12px 20px;
-  background: var(--primary-gradient);
+  background: var(--primary-color);
   color: #fff;
   border: none;
   border-radius: var(--radius);
@@ -143,7 +132,6 @@ body {
   transition: var(--transition);
   text-decoration: none;
   text-align: center;
-  box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.4);
 }
 
 .btn:hover {
@@ -346,29 +334,6 @@ body {
   color: var(--text-main);
 }
 
-/* Timer Widget */
-.timer-widget {
-  background: var(--surface-color);
-  padding: 32px 24px;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-md);
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border: 2px dashed var(--border-color);
-}
-.timer-display {
-  font-size: 64px;
-  font-weight: 700;
-  background: var(--primary-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  font-family: 'Courier New', Courier, monospace;
-  margin: 20px 0;
-  letter-spacing: 2px;
-}
 
 /* Lists and Items */
 .task-item, .note-item {

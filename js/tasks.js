@@ -38,7 +38,6 @@ auth.onAuthStateChanged((user) => {
                 tasksData.push({ id: doc.id, ...doc.data() });
             });
             renderTasks();
-            checkReminders(tasksData); // Call Reminder System
             
             // Dispatch event for analytics
             window.dispatchEvent(new CustomEvent('tasksUpdated', { detail: tasksData }));
@@ -46,33 +45,38 @@ auth.onAuthStateChanged((user) => {
     }
 });
 
-// Reminder System Logic
-let reminderPlayed = false; // Ek baar sound play karne ke liye
-
-function checkReminders(tasks) {
-    const today = new Date().toISOString().split('T')[0];
-    
-    // Find tasks due today or overdue that are still pending
-    const dueTasks = tasks.filter(t => t.status !== 'completed' && t.dueDate && t.dueDate <= today);
-
-    // Agar pehle se koi banner bana hua hai to usko hata dein (kyunke ab humein awaz chahiye)
-    const oldAlert = document.getElementById('reminderAlert');
-    if (oldAlert) {
-        oldAlert.remove();
-    }
-    
-    if (dueTasks.length > 0 && !reminderPlayed) {
-        // 1. Play Sound Only
-        const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3");
+// Smart Reminder Logic (Checks every minute in the background)
+// Reminder will ring if task is due today and time is after 6 PM (18:00) meaning end of day is near.
+function startSmartReminderSystem() {
+    setInterval(() => {
+        const now = new Date();
+        const currentHour = now.getHours();
         
-        // Try to play sound (Browser policy ki wajah se kabhi interact karna zaroori hota hai)
-        audio.play().then(() => {
-            reminderPlayed = true; // Sound chalne ke baad isko true kar dein taake bar bar na baje
-        }).catch(err => {
-            console.log("Please click anywhere on the page to allow sound to play.", err);
-        });
-    }
+        // Check if it's 6 PM or later (Deadline approaching)
+        if (currentHour >= 18) {
+            const today = now.toISOString().split('T')[0];
+            
+            // Filter pending tasks due today or overdue
+            const pendingDueTasks = tasksData.filter(t => t.status !== 'completed' && t.dueDate && t.dueDate <= today);
+            
+            if (pendingDueTasks.length > 0) {
+                // Check local storage to ensure we only remind once per day so it doesn't annoy the user
+                const lastReminderDate = localStorage.getItem('lastSmartReminder');
+                if (lastReminderDate !== today) {
+                    
+                    // Play Sound Only
+                    const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3");
+                    audio.play().catch(err => console.log("Sound autoplay blocked by browser", err));
+                    
+                    localStorage.setItem('lastSmartReminder', today);
+                }
+            }
+        }
+    }, 60000); // Check every 60 seconds
 }
+
+// Start the smart reminder background check
+startSmartReminderSystem();
 
 // Render Tasks function
 function renderTasks() {
@@ -81,13 +85,10 @@ function renderTasks() {
     tasksList.innerHTML = '';
     
     // Filter & Search Logic
-    const searchTerm = searchTask.value.toLowerCase();
-    const priorityFilter = filterPriority.value;
+    const searchTerm = searchTask?.value.toLowerCase() || "";
     
     const filteredTasks = tasksData.filter(task => {
-        const matchesSearch = task.title.toLowerCase().includes(searchTerm);
-        const matchesPriority = priorityFilter === 'all' || task.priority === priorityFilter;
-        return matchesSearch && matchesPriority;
+        return task.title.toLowerCase().includes(searchTerm);
     });
 
     if (filteredTasks.length === 0) {
@@ -105,7 +106,7 @@ function renderTasks() {
         div.innerHTML = `
             <div class="task-info">
                 <h4>${task.title}</h4>
-                <p><i class="ri-calendar-line"></i> Due: ${task.dueDate} | <span class="badge ${task.priority}">${task.priority}</span> | ${statusBadge}</p>
+                <p><i class="ri-calendar-line"></i> Due: ${task.dueDate} | <i class="ri-time-line"></i> ${task.duration} Hours | ${statusBadge}</p>
             </div>
             <div class="actions">
                 <button onclick="toggleTaskStatus('${task.id}', '${task.status}')" class="btn-complete" title="Mark Complete/Pending">
@@ -122,7 +123,6 @@ function renderTasks() {
 
 // Search and filter event listeners
 searchTask?.addEventListener('input', renderTasks);
-filterPriority?.addEventListener('change', renderTasks);
 
 // Add/Update Task Form Submit
 taskForm?.addEventListener('submit', async (e) => {
@@ -133,12 +133,12 @@ taskForm?.addEventListener('submit', async (e) => {
     const id = document.getElementById('taskId').value;
     const title = document.getElementById('taskTitle').value;
     const dueDate = document.getElementById('taskDate').value;
-    const priority = document.getElementById('taskPriority').value;
+    const duration = document.getElementById('taskDuration').value;
 
     const taskObj = {
         title,
         dueDate,
-        priority,
+        duration,
         userId: user.uid,
         status: 'pending',
         timestamp: new Date()
