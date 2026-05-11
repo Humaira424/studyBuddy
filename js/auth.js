@@ -1,4 +1,4 @@
-import { auth } from './firebase.js';
+import { auth, db } from './firebase.js';
 import { 
     createUserWithEmailAndPassword, 
     signInWithEmailAndPassword, 
@@ -7,6 +7,9 @@ import {
     updateProfile,
     sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+
+const ADMIN_EMAIL = 'ubaidullah51424@gmail.com'; // This user will see the admin panel
 
 // DOM Elements
 const loginForm = document.getElementById('loginForm');
@@ -43,6 +46,14 @@ if (signupForm) {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             // Update profile with name
             await updateProfile(userCredential.user, { displayName: fullName });
+            
+            // Save user to Firestore 'users' collection for Admin Panel tracking
+            await setDoc(doc(db, 'users', userCredential.user.uid), {
+                email: email,
+                displayName: fullName,
+                registrationDate: new Date().toISOString(),
+                uid: userCredential.user.uid
+            });
             
             window.location.href = 'dashboard.html';
         } catch (error) {
@@ -119,6 +130,16 @@ onAuthStateChanged(auth, (user) => {
         const nameDisplay = document.getElementById('userNameDisplay');
         if (nameDisplay) {
             nameDisplay.textContent = `Welcome, ${user.displayName || 'Student'}!`;
+        }
+        
+        // Admin Panel Visibility Logic
+        const adminNav = document.getElementById('adminNav');
+        if (adminNav) {
+            if (user.email === ADMIN_EMAIL) {
+                adminNav.style.display = 'block'; // Show Admin Tab
+            } else {
+                adminNav.style.display = 'none'; // Hide Admin Tab
+            }
         }
     } else {
         // User logged out hai, agar dashboard par hai to login bhejo

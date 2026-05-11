@@ -9,7 +9,7 @@ const closeTaskModal = document.getElementById('closeTaskModal');
 const taskForm = document.getElementById('taskForm');
 const tasksList = document.getElementById('tasksList');
 const searchTask = document.getElementById('searchTask');
-const filterPriority = document.getElementById('filterPriority');
+const filterStatus = document.getElementById('filterStatus');
 
 // Helper to open/close modal
 function toggleModal(modal, show) {
@@ -86,10 +86,27 @@ function renderTasks() {
     
     // Filter & Search Logic
     const searchTerm = searchTask?.value.toLowerCase() || "";
+    const statusFilter = filterStatus?.value || "all";
+    
+    let totalHours = 0;
     
     const filteredTasks = tasksData.filter(task => {
-        return task.title.toLowerCase().includes(searchTerm);
+        // Calculate total study hours (from completed tasks only)
+        if (task.status === 'completed' && task.duration) {
+            totalHours += parseFloat(task.duration);
+        }
+        
+        const matchesSearch = task.title.toLowerCase().includes(searchTerm) || (task.subject && task.subject.toLowerCase().includes(searchTerm));
+        const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
+        
+        return matchesSearch && matchesStatus;
     });
+    
+    // Update Total Study Hours on Dashboard
+    const totalStudyHoursEl = document.getElementById('totalStudyHours');
+    if (totalStudyHoursEl) {
+        totalStudyHoursEl.textContent = totalHours;
+    }
 
     if (filteredTasks.length === 0) {
         tasksList.innerHTML = '<p style="text-align: center; color: var(--text-muted); margin-top: 40px;">No tasks found.</p>';
@@ -101,16 +118,21 @@ function renderTasks() {
             ? '<span class="badge status-completed">Completed</span>'
             : '<span class="badge status-pending">Pending</span>';
             
+        const subjectBadge = task.subject ? `<span class="badge" style="background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-main);">${task.subject}</span>` : '';
+            
         const div = document.createElement('div');
         div.className = 'task-item';
         div.innerHTML = `
             <div class="task-info">
                 <h4>${task.title}</h4>
-                <p><i class="ri-calendar-line"></i> Due: ${task.dueDate} | <i class="ri-time-line"></i> ${task.duration} Hours | ${statusBadge}</p>
+                <p>${subjectBadge} <i class="ri-calendar-line"></i> Due: ${task.dueDate} | <i class="ri-time-line"></i> ${task.duration} Hours | ${statusBadge}</p>
             </div>
             <div class="actions">
                 <button onclick="toggleTaskStatus('${task.id}', '${task.status}')" class="btn-complete" title="Mark Complete/Pending">
                     <i class="ri-${task.status === 'completed' ? 'refresh-line' : 'check-line'}"></i>
+                </button>
+                <button onclick="editTask('${task.id}')" class="btn-complete" title="Edit Task" style="background: var(--primary-color);">
+                    <i class="ri-edit-line"></i>
                 </button>
                 <button onclick="deleteTask('${task.id}')" class="btn-delete" title="Delete Task">
                     <i class="ri-delete-bin-line"></i>
@@ -123,6 +145,7 @@ function renderTasks() {
 
 // Search and filter event listeners
 searchTask?.addEventListener('input', renderTasks);
+filterStatus?.addEventListener('change', renderTasks);
 
 // Add/Update Task Form Submit
 taskForm?.addEventListener('submit', async (e) => {
@@ -132,22 +155,25 @@ taskForm?.addEventListener('submit', async (e) => {
 
     const id = document.getElementById('taskId').value;
     const title = document.getElementById('taskTitle').value;
+    const subject = document.getElementById('taskSubject').value;
     const dueDate = document.getElementById('taskDate').value;
     const duration = document.getElementById('taskDuration').value;
 
-    const taskObj = {
+    // Build task object, don't overwrite status/timestamp if updating
+    let taskObj = {
         title,
+        subject,
         dueDate,
         duration,
-        userId: user.uid,
-        status: 'pending',
-        timestamp: new Date()
+        userId: user.uid
     };
 
     try {
         if (id) {
             await updateDoc(doc(db, "tasks", id), taskObj);
         } else {
+            taskObj.status = 'pending';
+            taskObj.timestamp = new Date();
             // Add new task
             await addDoc(collection(db, "tasks"), taskObj);
         }
@@ -159,6 +185,19 @@ taskForm?.addEventListener('submit', async (e) => {
 });
 
 // Global functions for buttons generated in HTML string
+window.editTask = (id) => {
+    const task = tasksData.find(t => t.id === id);
+    if(task) {
+        document.getElementById('taskId').value = task.id;
+        document.getElementById('taskTitle').value = task.title;
+        document.getElementById('taskSubject').value = task.subject || '';
+        document.getElementById('taskDate').value = task.dueDate;
+        document.getElementById('taskDuration').value = task.duration;
+        document.getElementById('taskModalTitle').textContent = 'Edit Task';
+        toggleModal(taskModal, true);
+    }
+};
+
 window.deleteTask = async (id) => {
     if (confirm("Are you sure you want to delete this task?")) {
         try {

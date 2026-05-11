@@ -54,7 +54,10 @@ function renderNotes() {
         div.innerHTML = `
             <div style="display:flex; justify-content: space-between; width: 100%; align-items: flex-start;">
                 <h3 style="color: var(--text-main); font-size: 18px;">${note.title}</h3>
-                <button onclick="deleteNote('${note.id}')" style="background: none; border: none; color: var(--danger-color); cursor: pointer;"><i class="ri-delete-bin-line"></i></button>
+                <div>
+                    <button onclick="editNote('${note.id}')" style="background: none; border: none; color: var(--primary-color); cursor: pointer; margin-right: 8px;"><i class="ri-edit-line"></i></button>
+                    <button onclick="deleteNote('${note.id}')" style="background: none; border: none; color: var(--danger-color); cursor: pointer;"><i class="ri-delete-bin-line"></i></button>
+                </div>
             </div>
             <p style="color: var(--text-muted); font-size: 14px; margin-top: 12px; white-space: pre-wrap;">${note.content}</p>
         `;
@@ -67,22 +70,38 @@ noteForm?.addEventListener('submit', async (e) => {
     const user = auth.currentUser;
     if (!user) return;
 
+    const id = document.getElementById('noteId').value;
     const title = document.getElementById('noteTitle').value;
     const content = document.getElementById('noteContent').value;
 
     try {
-        await addDoc(collection(db, "notes"), {
-            title,
-            content,
-            userId: user.uid,
-            timestamp: new Date()
-        });
+        if (id) {
+            await updateDoc(doc(db, "notes", id), { title, content });
+        } else {
+            await addDoc(collection(db, "notes"), {
+                title,
+                content,
+                userId: user.uid,
+                timestamp: new Date()
+            });
+        }
         toggleModal(noteModal, false);
     } catch (error) {
         console.error("Error saving note: ", error);
         alert("Could not save note.");
     }
 });
+
+window.editNote = (id) => {
+    const note = notesData.find(n => n.id === id);
+    if(note) {
+        document.getElementById('noteId').value = note.id;
+        document.getElementById('noteTitle').value = note.title;
+        document.getElementById('noteContent').value = note.content;
+        document.getElementById('noteModalTitle').textContent = 'Edit Note';
+        toggleModal(noteModal, true);
+    }
+};
 
 window.deleteNote = async (id) => {
     if (confirm("Delete this note?")) {
