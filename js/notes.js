@@ -16,6 +16,7 @@ function toggleModal(modal, show) {
         modal.classList.remove('active');
         noteForm.reset();
         document.getElementById('noteId').value = '';
+        if(document.getElementById('notePdfLink')) document.getElementById('notePdfLink').value = '';
     }
 }
 
@@ -51,6 +52,10 @@ function renderNotes() {
         const div = document.createElement('div');
         div.className = 'stat-card'; // Reusing stat card style for note card
         div.style.alignItems = 'flex-start';
+        const pdfButton = note.pdfLink 
+            ? `<a href="${note.pdfLink}" target="_blank" class="btn" style="display: inline-block; padding: 6px 12px; font-size: 12px; margin-top: 12px; width: auto;"><i class="ri-file-pdf-line"></i> View PDF</a>` 
+            : '';
+            
         div.innerHTML = `
             <div style="display:flex; justify-content: space-between; width: 100%; align-items: flex-start;">
                 <h3 style="color: var(--text-main); font-size: 18px;">${note.title}</h3>
@@ -60,6 +65,7 @@ function renderNotes() {
                 </div>
             </div>
             <p style="color: var(--text-muted); font-size: 14px; margin-top: 12px; white-space: pre-wrap;">${note.content}</p>
+            ${pdfButton}
         `;
         notesList.appendChild(div);
     });
@@ -73,14 +79,16 @@ noteForm?.addEventListener('submit', async (e) => {
     const id = document.getElementById('noteId').value;
     const title = document.getElementById('noteTitle').value;
     const content = document.getElementById('noteContent').value;
+    const pdfLink = document.getElementById('notePdfLink').value;
 
     try {
         if (id) {
-            await updateDoc(doc(db, "notes", id), { title, content });
+            await updateDoc(doc(db, "notes", id), { title, content, pdfLink });
         } else {
             await addDoc(collection(db, "notes"), {
                 title,
                 content,
+                pdfLink,
                 userId: user.uid,
                 timestamp: new Date()
             });
@@ -98,6 +106,7 @@ window.editNote = (id) => {
         document.getElementById('noteId').value = note.id;
         document.getElementById('noteTitle').value = note.title;
         document.getElementById('noteContent').value = note.content;
+        if(document.getElementById('notePdfLink')) document.getElementById('notePdfLink').value = note.pdfLink || '';
         document.getElementById('noteModalTitle').textContent = 'Edit Note';
         toggleModal(noteModal, true);
     }
