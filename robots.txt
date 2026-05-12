@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://humaira424.github.io/studyBuddy/sitemap.xml
