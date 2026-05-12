@@ -34,14 +34,15 @@ async function loadAdminData() {
             if (users.length === 0) {
                 adminUsersList.innerHTML = '<tr><td colspan="3" style="padding: 16px 8px; color: var(--text-muted); text-align:center;">No users found.</td></tr>';
             } else {
-                users.forEach(u => {
+                users.forEach((u, index) => {
+                    const studentId = `U-${(index + 1).toString().padStart(3, '0')}`;
                     const date = u.registrationDate ? new Date(u.registrationDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'Unknown';
                     const tr = document.createElement('tr');
                     tr.style.borderBottom = '1px solid var(--border-color)';
                     tr.innerHTML = `
+                        <td style="padding: 12px 8px; font-weight: bold; color: var(--primary-color);">${studentId}</td>
                         <td style="padding: 12px 8px;">${u.email} <br><small style="color:var(--text-muted)">${u.displayName || 'No Name'}</small></td>
                         <td style="padding: 12px 8px;">${date}</td>
-                        <td style="padding: 12px 8px; font-family: monospace; font-size: 12px; color: var(--text-muted);">${u.uid}</td>
                     `;
                     adminUsersList.appendChild(tr);
                 });
