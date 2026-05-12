@@ -78,7 +78,12 @@ if (loginForm) {
             await signInWithEmailAndPassword(auth, email, password);
             window.location.href = 'dashboard.html';
         } catch (error) {
-            showAlert('loginAlert', 'Invalid email or password. Please try again.', 'error');
+            console.error("Login Error:", error);
+            let errorMessage = "Invalid email or password. Please try again.";
+            if (error.code === 'auth/network-request-failed') errorMessage = "Network error. Please check your internet.";
+            if (error.code === 'auth/too-many-requests') errorMessage = "Too many attempts. Please try again later.";
+            
+            showAlert('loginAlert', errorMessage, 'error');
             btn.textContent = "Login";
             btn.disabled = false;
         }
@@ -119,13 +124,9 @@ if (logoutBtn) {
 // 5. Route Protection & Auth State Listener
 onAuthStateChanged(auth, (user) => {
     const currentPath = window.location.pathname;
-    const isAuthPage = currentPath.includes('login.html') || currentPath.includes('signup.html') || currentPath.endsWith('/') || currentPath.includes('index.html');
+    const isAuthPage = currentPath.includes('login.html') || currentPath.includes('signup.html') || currentPath.endsWith('/') || currentPath.endsWith('index.html');
 
     if (user) {
-        // User logged in hai, agar login page par hai to dashboard bhejo
-        if (isAuthPage) {
-            window.location.href = 'dashboard.html';
-        }
         // Dashboard par user ka naam update karna
         const nameDisplay = document.getElementById('userNameDisplay');
         if (nameDisplay) {
@@ -143,19 +144,26 @@ onAuthStateChanged(auth, (user) => {
         if (profileFullUid) profileFullUid.textContent = user.uid.substring(0, 6) + '...';
 
         // Fetch all users to find this user's simple ID (U-001 format)
-        if (profileShortId) {
+        // Optimized: Only run if we are on a page that needs it
+        if (profileShortId && profileShortId.textContent === "---") {
             getDocs(collection(db, "users")).then(snapshot => {
                 const users = [];
-                snapshot.forEach(doc => users.push({ id: doc.id, ...doc.data() }));
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.uid) users.push(data);
+                });
+                // Sort by registration date to keep IDs consistent
+                users.sort((a, b) => new Date(a.registrationDate) - new Date(b.registrationDate));
+                
                 const index = users.findIndex(u => u.uid === user.uid);
                 if (index !== -1) {
                     profileShortId.textContent = `U-${(index + 1).toString().padStart(3, '0')}`;
                 } else {
-                    profileShortId.textContent = "New User";
+                    profileShortId.textContent = "U-New";
                 }
             }).catch(err => {
                 console.error("Error fetching users for ID:", err);
-                profileShortId.textContent = "N/A";
+                profileShortId.textContent = "User";
             });
         }
         
@@ -168,9 +176,14 @@ onAuthStateChanged(auth, (user) => {
                 adminNav.style.display = 'none'; // Hide Admin Tab
             }
         }
+
+        // Redirect if on auth page
+        if (isAuthPage) {
+            window.location.href = 'dashboard.html';
+        }
     } else {
         // User logged out hai, agar dashboard par hai to login bhejo
-        if (!isAuthPage) {
+        if (!isAuthPage && currentPath.includes('dashboard.html')) {
             window.location.href = 'login.html';
         }
     }
