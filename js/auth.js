@@ -140,7 +140,7 @@ onAuthStateChanged(auth, (user) => {
 
         if (profileName) profileName.textContent = user.displayName || 'Student';
         if (profileEmail) profileEmail.textContent = user.email;
-        if (profileFullUid) profileFullUid.textContent = user.uid;
+        if (profileFullUid) profileFullUid.textContent = user.uid.substring(0, 6) + '...';
 
         // Fetch all users to find this user's simple ID (U-001 format)
         if (profileShortId) {
