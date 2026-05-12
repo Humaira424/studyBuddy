@@ -85,14 +85,22 @@
                         <button class="btn" id="openTaskModalBtn" style="width: auto;">+ Add Task</button>
                     </div>
 
-                    <div class="filters mb-16 d-flex gap-16">
-                        <input type="text" id="searchTask" placeholder="Search tasks..." class="form-group"
-                            style="margin: 0; padding: 12px; border-radius: var(--radius); border: 1px solid var(--border-color); flex: 1; background: var(--bg-color); color: var(--text-main);">
-                        <select id="filterStatus" style="padding: 12px; border-radius: var(--radius); border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main);">
-                            <option value="all">All Status</option>
-                            <option value="pending">Pending</option>
-                            <option value="completed">Completed</option>
-                        </select>
+                    <div class="filters mb-16 d-flex gap-16" style="flex-wrap: wrap;">
+                        <div class="tab-group" style="display: flex; gap: 8px; margin-bottom: 8px;">
+                            <button class="btn-tab active" data-plan="all">All Plans</button>
+                            <button class="btn-tab" data-plan="daily">Daily</button>
+                            <button class="btn-tab" data-plan="weekly">Weekly</button>
+                            <button class="btn-tab" data-plan="monthly">Monthly</button>
+                        </div>
+                        <div style="display: flex; gap: 16px; flex: 1; min-width: 300px;">
+                            <input type="text" id="searchTask" placeholder="Search tasks..." class="form-group"
+                                style="margin: 0; padding: 12px; border-radius: var(--radius); border: 1px solid var(--border-color); flex: 1; background: var(--bg-color); color: var(--text-main);">
+                            <select id="filterStatus" style="padding: 12px; border-radius: var(--radius); border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main);">
+                                <option value="all">All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div id="tasksList">

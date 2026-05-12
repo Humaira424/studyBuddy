@@ -156,6 +156,30 @@ body {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
+.btn-tab {
+  padding: 8px 20px;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  background: var(--surface-color);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+.btn-tab:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.btn-tab.active {
+  background: var(--primary-color);
+  color: #fff;
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
 /* Dashboard Layout */
 .dashboard-layout {
   display: flex;

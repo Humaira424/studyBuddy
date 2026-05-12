@@ -10,6 +10,14 @@ const taskForm = document.getElementById('taskForm');
 const tasksList = document.getElementById('tasksList');
 const searchTask = document.getElementById('searchTask');
 const filterStatus = document.getElementById('filterStatus');
+const planTabs = document.querySelectorAll('.btn-tab');
+
+let currentPlan = 'all';
+let userInteracted = false;
+let tasksData = [];
+
+// Track user interaction for audio permissions
+document.addEventListener('click', () => userInteracted = true, { once: true });
 
 // Helper to open/close modal
 function toggleModal(modal, show) {
@@ -29,9 +37,6 @@ openTaskModalBtn?.addEventListener('click', () => toggleModal(taskModal, true));
 closeTaskModal?.addEventListener('click', () => toggleModal(taskModal, false));
 
 // Listen to Tasks Data
-let tasksData = [];
-
-// Using onSnapshot to automatically update UI when data changes in Firestore
 auth.onAuthStateChanged((user) => {
     if (user) {
         const q = query(collection(db, "tasks"), where("userId", "==", user.uid));
@@ -48,34 +53,43 @@ auth.onAuthStateChanged((user) => {
     }
 });
 
-// Smart Reminder Logic (Checks every minute in the background)
-// Reminder will ring if task is due today and time is after 6 PM (18:00) meaning end of day is near.
+// Smart Reminder Logic (Improved)
 function startSmartReminderSystem() {
     setInterval(() => {
         const now = new Date();
         const currentHour = now.getHours();
+        const todayStr = now.toISOString().split('T')[0];
         
-        // Check if it's 6 PM or later (Deadline approaching)
-        if (currentHour >= 18) {
-            const today = now.toISOString().split('T')[0];
-            
-            // Filter pending tasks due today or overdue
-            const pendingDueTasks = tasksData.filter(t => t.status !== 'completed' && t.dueDate && t.dueDate <= today);
+        // Reminder rings if it's after 4 PM and user has pending tasks for today
+        if (currentHour >= 16) {
+            const pendingDueTasks = tasksData.filter(t => t.status !== 'completed' && t.dueDate === todayStr);
             
             if (pendingDueTasks.length > 0) {
-                // Check local storage to ensure we only remind once per day so it doesn't annoy the user
-                const lastReminderDate = localStorage.getItem('lastSmartReminder');
-                if (lastReminderDate !== today) {
+                const lastReminderTime = localStorage.getItem('lastSmartReminderTime');
+                const nowTime = now.getTime();
+                
+                // Remind every 30 minutes if still pending
+                if (!lastReminderTime || (nowTime - lastReminderTime > 30 * 60 * 1000)) {
                     
-                    // Play Sound Only
-                    const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3");
-                    audio.play().catch(err => console.log("Sound autoplay blocked by browser", err));
+                    // Show notification banner if it exists
+                    const notification = document.getElementById('deadlineNotification');
+                    if (notification) {
+                        notification.style.display = 'flex';
+                        notification.querySelector('p').textContent = `Reminder: You have ${pendingDueTasks.length} pending tasks for today!`;
+                    }
                     
-                    localStorage.setItem('lastSmartReminder', today);
+                    // Play Sound if user has interacted
+                    if (userInteracted) {
+                        const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3");
+                        audio.volume = 0.6;
+                        audio.play().catch(err => console.log("Sound failed:", err));
+                    }
+                    
+                    localStorage.setItem('lastSmartReminderTime', nowTime);
                 }
             }
         }
-    }, 60000); // Check every 60 seconds
+    }, 60000); // Check every minute
 }
 
 // Start the smart reminder background check
@@ -86,17 +100,16 @@ function renderTasks() {
     if (!tasksList) return;
     
     tasksList.innerHTML = '';
-    
-    // Filter & Search Logic
     const searchTerm = searchTask?.value.toLowerCase() || "";
     const statusFilter = filterStatus?.value || "all";
     
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
     let totalHours = 0;
     
     const filteredTasks = tasksData.filter(task => {
-        // Calculate total study hours (from completed tasks only)
+        // 1. Calculate total study hours (from completed tasks only)
         if (task.status === 'completed' && task.duration) {
-            // Parse HH:MM:SS or the old decimal format
             if (task.duration.includes(':')) {
                 const [h, m, s] = task.duration.split(':').map(Number);
                 totalHours += h + (m / 60) + (s / 3600);
@@ -105,10 +118,27 @@ function renderTasks() {
             }
         }
         
+        // 2. Filter by Search & Status
         const matchesSearch = task.title.toLowerCase().includes(searchTerm) || (task.subject && task.subject.toLowerCase().includes(searchTerm));
         const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
         
-        return matchesSearch && matchesStatus;
+        // 3. Filter by Plan (Daily/Weekly/Monthly)
+        let matchesPlan = true;
+        if (currentPlan === 'daily') {
+            matchesPlan = task.dueDate === todayStr;
+        } else if (currentPlan === 'weekly') {
+            const weekFromNow = new Date();
+            weekFromNow.setDate(now.getDate() + 7);
+            const weekStr = weekFromNow.toISOString().split('T')[0];
+            matchesPlan = task.dueDate >= todayStr && task.dueDate <= weekStr;
+        } else if (currentPlan === 'monthly') {
+            const monthFromNow = new Date();
+            monthFromNow.setDate(now.getDate() + 30);
+            const monthStr = monthFromNow.toISOString().split('T')[0];
+            matchesPlan = task.dueDate >= todayStr && task.dueDate <= monthStr;
+        }
+
+        return matchesSearch && matchesStatus && matchesPlan;
     });
     
     // Update Total Study Hours on Dashboard
@@ -118,7 +148,7 @@ function renderTasks() {
     }
 
     if (filteredTasks.length === 0) {
-        tasksList.innerHTML = '<p style="text-align: center; color: var(--text-muted); margin-top: 40px;">No tasks found.</p>';
+        tasksList.innerHTML = `<p style="text-align: center; color: var(--text-muted); margin-top: 40px;">No tasks found for ${currentPlan} plan.</p>`;
         return;
     }
 
@@ -158,9 +188,18 @@ function renderTasks() {
     });
 }
 
-// Search and filter event listeners
+// Event Listeners for Filters & Tabs
 searchTask?.addEventListener('input', renderTasks);
 filterStatus?.addEventListener('change', renderTasks);
+
+planTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+        planTabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        currentPlan = tab.dataset.plan;
+        renderTasks();
+    });
+});
 
 // Add/Update Task Form Submit
 taskForm?.addEventListener('submit', async (e) => {
@@ -178,7 +217,6 @@ taskForm?.addEventListener('submit', async (e) => {
     const s = document.getElementById('taskSeconds').value || 0;
     const duration = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 
-    // Build task object, don't overwrite status/timestamp if updating
     let taskObj = {
         title,
         subject,
@@ -193,17 +231,16 @@ taskForm?.addEventListener('submit', async (e) => {
         } else {
             taskObj.status = 'pending';
             taskObj.timestamp = new Date();
-            // Add new task
             await addDoc(collection(db, "tasks"), taskObj);
         }
         toggleModal(taskModal, false);
     } catch (error) {
         console.error("Error saving task: ", error);
-        alert("Could not save task. Please try again.");
+        alert("Could not save task.");
     }
 });
 
-// Global functions for buttons generated in HTML string
+// Global functions
 window.editTask = (id) => {
     const task = tasksData.find(t => t.id === id);
     if(task) {
@@ -229,7 +266,7 @@ window.editTask = (id) => {
 };
 
 window.deleteTask = async (id) => {
-    if (confirm("Are you sure you want to delete this task?")) {
+    if (confirm("Delete this task?")) {
         try {
             await deleteDoc(doc(db, "tasks", id));
         } catch (error) {
