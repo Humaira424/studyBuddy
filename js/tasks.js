@@ -19,6 +19,9 @@ function toggleModal(modal, show) {
         modal.classList.remove('active');
         taskForm.reset();
         document.getElementById('taskId').value = '';
+        document.getElementById('taskHours').value = '0';
+        document.getElementById('taskMinutes').value = '0';
+        document.getElementById('taskSeconds').value = '0';
     }
 }
 
@@ -93,7 +96,13 @@ function renderTasks() {
     const filteredTasks = tasksData.filter(task => {
         // Calculate total study hours (from completed tasks only)
         if (task.status === 'completed' && task.duration) {
-            totalHours += parseFloat(task.duration);
+            // Parse HH:MM:SS or the old decimal format
+            if (task.duration.includes(':')) {
+                const [h, m, s] = task.duration.split(':').map(Number);
+                totalHours += h + (m / 60) + (s / 3600);
+            } else {
+                totalHours += parseFloat(task.duration);
+            }
         }
         
         const matchesSearch = task.title.toLowerCase().includes(searchTerm) || (task.subject && task.subject.toLowerCase().includes(searchTerm));
@@ -105,7 +114,7 @@ function renderTasks() {
     // Update Total Study Hours on Dashboard
     const totalStudyHoursEl = document.getElementById('totalStudyHours');
     if (totalStudyHoursEl) {
-        totalStudyHoursEl.textContent = totalHours;
+        totalStudyHoursEl.textContent = totalHours.toFixed(2);
     }
 
     if (filteredTasks.length === 0) {
@@ -125,7 +134,7 @@ function renderTasks() {
         div.innerHTML = `
             <div class="task-info">
                 <h4>${task.title}</h4>
-                <p>${subjectBadge} <i class="ri-calendar-line"></i> Due: ${task.dueDate} | <i class="ri-time-line"></i> ${task.duration} Hours | ${statusBadge}</p>
+                <p>${subjectBadge} <i class="ri-calendar-line"></i> Due: ${task.dueDate} | <i class="ri-time-line"></i> ${task.duration} | ${statusBadge}</p>
             </div>
             <div class="actions">
                 <button onclick="toggleTaskStatus('${task.id}', '${task.status}')" class="btn-complete" title="Mark Complete/Pending">
@@ -157,7 +166,11 @@ taskForm?.addEventListener('submit', async (e) => {
     const title = document.getElementById('taskTitle').value;
     const subject = document.getElementById('taskSubject').value;
     const dueDate = document.getElementById('taskDate').value;
-    const duration = document.getElementById('taskDuration').value;
+    
+    const h = document.getElementById('taskHours').value || 0;
+    const m = document.getElementById('taskMinutes').value || 0;
+    const s = document.getElementById('taskSeconds').value || 0;
+    const duration = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 
     // Build task object, don't overwrite status/timestamp if updating
     let taskObj = {
@@ -192,7 +205,18 @@ window.editTask = (id) => {
         document.getElementById('taskTitle').value = task.title;
         document.getElementById('taskSubject').value = task.subject || '';
         document.getElementById('taskDate').value = task.dueDate;
-        document.getElementById('taskDuration').value = task.duration;
+        
+        if (task.duration && task.duration.includes(':')) {
+            const [h, m, s] = task.duration.split(':');
+            document.getElementById('taskHours').value = parseInt(h);
+            document.getElementById('taskMinutes').value = parseInt(m);
+            document.getElementById('taskSeconds').value = parseInt(s);
+        } else {
+            document.getElementById('taskHours').value = task.duration || 0;
+            document.getElementById('taskMinutes').value = 0;
+            document.getElementById('taskSeconds').value = 0;
+        }
+        
         document.getElementById('taskModalTitle').textContent = 'Edit Task';
         toggleModal(taskModal, true);
     }
