@@ -8,58 +8,54 @@ Is project ko functional banane ke liye aapko Firebase connect karna hoga.
 
 Steps:
 1. Google par "Firebase Console" search karein aur apne Gmail se login karein.
-2. "Add Project" par click karein aur project ka naam "StudyBuddy" rakhein (Analytics ko turn off kar sakte hain for simplicity).
-3. Project dashboard open hone ke baad, "Web" icon (</>) par click karein aur ek web app register karein.
-4. Wahan aapko "firebaseConfig" ka code milega (isme apiKey, projectId waghaira honge).
-5. Apne project folder mein `js/firebase.js` open karein, aur wahan meri di gayi dummy config ko apni asli config se replace kar dein.
-6. Firebase Console mein left menu se "Authentication" mein jayein -> "Get Started" karein -> "Email/Password" ko Enable karein. (Yeh login/signup ke liye zaroori hai).
-7. Phir left menu se "Firestore Database" mein jayein -> "Create Database" karein -> "Start in Test Mode" select kar ke enable kar dein. (Is se aap data save kar payenge).
+2. "Add Project" par click karein aur project ka naam "StudyBuddy" rakhein.
+3. Project dashboard mein "Web" icon (</>) par click karke app register karein.
+4. Wahan se "firebaseConfig" copy karke `js/firebase.js` mein paste kar dein.
+5. "Authentication" mein ja kar "Email/Password" ko Enable karein.
+6. "Firestore Database" mein ja kar "Create Database" karein aur "Test Mode" on kar dein.
+7. (Optional) Agar PDF upload karna ho to "Storage" bhi on karna parega.
 
-2. HTML Tags ka Purpose
------------------------
-- <div> : Yeh ek container tag hai. Jaise box ke andar cheezein rakhi jati hain, hum div ko use karte hain alag alag sections banane ke liye.
-- <form> : User se data lene ke liye (jaise login email/password) form tag use hota hai.
-- <input> : Text, email, password, ya date likhne ke boxes banane ke liye.
-- <button> : Click karne walay buttons banane ke liye. Type="submit" ka matlab hai form save karna.
-- <section> : Ek specific hissa (jaise sirf Tasks ya sirf Notes) define karne ke liye. Hum JS ke through in sections ko hide/show karte hain.
+2. HTML & CSS Basics
+---------------------
+- HTML: Website ka dhancha (structure) banane ke liye use hota hai (Inputs, Buttons, Sections).
+- CSS: Design aur khoobsurti ke liye. Humne `:root` mein colors define kiye hain taake ek hi jagah se poori website ka color badla ja sake.
+- Responsive: Yeh website mobile aur desktop dono par sahi chalti hai (@media queries ki madad se).
 
-3. CSS Classes & Properties ka Purpose
---------------------------------------
-- :root : Yahan humne "CSS Variables" define kiye hain. Jaise `--primary-color: #4F46E5`. Iska faida yeh hai ke agar color change karna ho to sirf yahan badalna parta hai, har jagah khud badal jata hai. Light theme aur Dark theme dono ke colors yahan set hain.
-- display: flex : Is se hum elements ko easily row ya column mein align kar sakte hain. "justify-content" aur "align-items" iske sath use hote hain taake elements centre mein aa sakein.
-- transition: all 0.3s ease : Yeh buttons par hover karne par animation deta hai (jaise aahista se color change hona).
-- box-shadow : Element ke peeche halka sa saya (shadow) dalne ke liye taake wo 3D aur modern lage.
-- @media (max-width: 768px) : Yeh mobile phones ke liye design fix karne ke liye use hota hai (Responsiveness).
+3. JavaScript Logic
+-------------------
+- onAuthStateChanged: Check karta hai ke user login hai ya nahi.
+- renderTasks() / renderNotes(): Database se data laa kar screen par dikhate hain.
+- toggleModal(): Forms ko pop-up ki tarah kholne aur band karne ke liye.
 
-4. JavaScript Functions ka Purpose
-----------------------------------
-- e.preventDefault() : Jab hum form submit karte hain to page refresh ho jata hai. Yeh function page ko refresh hone se rokti hai taake hum Firebase mein data save kar sakein background mein, baghair page refresh kiye.
-- onAuthStateChanged : Yeh Firebase ka function hai jo check karta hai ke user currently logged in hai ya nahi. Agar login nahi hai to wo dashboard se login page par wapas bhej deta hai (isko Route Protection kehte hain).
-- toggleModal() : Yeh function 'Add Task' aur 'Add Note' walay popup form (modal) ko kholne aur band karne ka kaam karta hai.
-- renderTasks() / renderNotes() : Yeh functions Firebase se laya gaya data HTML code mein convert kar ke screen par print/display karte hain.
+4. Admin Panel aur User ID (New!)
+---------------------------------
+- **Admin Access:** Sirf `ubaidullah51424@gmail.com` ko Admin Panel nazar aata hai.
+- **User Directory:** Admin saray users ki list aur unke total tasks dekh sakta hai.
+- **User ID:** Har user ko ek asaan ID di jati hai (e.g., U-001) jo unke profile mein bhi show hoti hai.
 
-5. CRUD Operations ka Explanation (Tasks & Notes)
--------------------------------------------------
-CRUD ka matlab hai: Create, Read, Update, Delete.
-- Create (addDoc): Naya task ya note database mein dalne ke liye use hota hai. (Jaise, jab aap form mein 'Save Task' click karte hain).
-- Read (onSnapshot / getDocs): Database se data laa kar website par dikhane ke liye. onSnapshot humein live updates deta hai (agar doosre device se task update ho to idhar khud change ho jayega).
-- Update (updateDoc): Kisi task ka status badalne ke liye, jaise "Pending" se "Completed" karna.
-- Delete (deleteDoc): Task ya note ko delete (remove) karne ke liye. 
+5. Study Planner (H:M:S & Plans)
+---------------------------------
+- **Time Format:** Tasks mein Hours, Minutes aur Seconds teeno set kiye ja sakte hain.
+- **Tabs (Daily/Weekly/Monthly):** Aap apne tasks ko date ke mutabiq filter kar sakte hain.
+- **Symbols:** Time ke sath symbols (`h, m, s`) show hote hain.
 
-6. Customization (Future mein changes kaise karein?)
-----------------------------------------------------
-- Color Change: `css/style.css` mein `:root` section mein jayen aur `--primary-color` ka hex code change kar dein (e.g., agar Red chahiye to #FF0000 likh dein). Hover color ke liye `--primary-hover` change karein.
-- Naya Tab Add karna: `dashboard.html` mein sidebar ki list `<ul class="nav-links">` mein ek naya `<li>` add karein jisme `data-target="newTabId"` ho. Phir `<main>` area mein ek nai `<section id="newTabId" class="page-section">` banayen. JS khud usko click karne par dikhayega.
-- Font Change: `style.css` ke top par Google Fonts ka link laga hai. Wahan se koi aur font copy kar ke paste karein aur `body { font-family: ... }` mein naya naam likh dein.
-- Admin Dashboard: Maine is code ko simple rakha hai. Agar future mein aap admin banana chahein, to Firestore mein ek "users" ki collection banani hogi jisme role "admin" ho, phir code check karega agar admin hai to sab users ka data fetch karke dikhaye. Abhi yeh purely student productivity dashboard hai jisme user apna data dekhta hai.
+6. Notes with PDF Support
+--------------------------
+- Aap notes mein Google Drive ka PDF link add kar sakte hain.
+- "View PDF" button par click karne se PDF naye tab mein khul jati hai.
 
-7. Buttons & Links
-------------------
-- "Logout" Button: `js/auth.js` mein signOut() function ko call karta hai, aur session khatam karke login page par bhej deta hai.
-- Theme Toggle (Moon/Sun icon): `js/dashboard.js` mein dark mode toggle karta hai, aur aapki pasand ko browser ke "localStorage" mein save karta hai taake website band kar ke kholne par wahi theme rahe.
-- "Mark Complete" Button: Yeh green tick wala button task ke status ko pending aur completed ke darmiyan change karta hai (Update operation).
+7. Smart Reminders & Sound
+--------------------------
+- Sham 4 PM ke baad system pending tasks ka alert deta hai.
+- User ke ek click ke baad system "Buzz" sound play karta hai taake user ko yaad rahe.
 
-8. Naye Features (Jo baad mein add kiye gaye)
----------------------------------------------
-- Focus Timer (Pomodoro): `js/dashboard.js` mein iski logic hai. Yeh `setInterval()` use karta hai jo har 1 second (1000 milliseconds) baad time ko 1 second kam karta hai. Jab time 0 ho jata hai to break ki notification aur aawaz aati hai. Yeh student ki concentration barhane ke liye banaya gaya hai.
-- Audio Reminder: `js/tasks.js` mein `checkReminders()` function hai. Agar koi pending task aaj ki date ka ho, to code `new Audio()` function ke zariye ek "Ting" ki sound play karta hai. Autoplay se bachne ke liye browser aapse pehle ek click mangta hai.
+8. SEO (Search Engine Optimization)
+-----------------------------------
+- Humne Meta Tags, `robots.txt` aur `sitemap.xml` add kiye hain taake Google aapki website ko asani se dhund sake.
+
+9. Customization
+----------------
+- Colors badalne ke liye `css/style.css` mein `--primary-color` badlein.
+- Admin badalne ke liye `js/auth.js` mein `ADMIN_EMAIL` badlein.
+
+Aapka project ab mukammal hai! 🚀✨
