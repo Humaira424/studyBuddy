@@ -7,7 +7,7 @@ import {
     updateProfile,
     sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
-import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+import { doc, setDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
 const ADMIN_EMAIL = 'ubaidullah51424@gmail.com'; // This user will see the admin panel
 
@@ -130,6 +130,33 @@ onAuthStateChanged(auth, (user) => {
         const nameDisplay = document.getElementById('userNameDisplay');
         if (nameDisplay) {
             nameDisplay.textContent = `Welcome, ${user.displayName || 'Student'}!`;
+        }
+
+        // Profile Section Populate
+        const profileName = document.getElementById('profileName');
+        const profileEmail = document.getElementById('profileEmail');
+        const profileFullUid = document.getElementById('profileFullUid');
+        const profileShortId = document.getElementById('profileShortId');
+
+        if (profileName) profileName.textContent = user.displayName || 'Student';
+        if (profileEmail) profileEmail.textContent = user.email;
+        if (profileFullUid) profileFullUid.textContent = user.uid;
+
+        // Fetch all users to find this user's simple ID (U-001 format)
+        if (profileShortId) {
+            getDocs(collection(db, "users")).then(snapshot => {
+                const users = [];
+                snapshot.forEach(doc => users.push({ id: doc.id, ...doc.data() }));
+                const index = users.findIndex(u => u.uid === user.uid);
+                if (index !== -1) {
+                    profileShortId.textContent = `U-${(index + 1).toString().padStart(3, '0')}`;
+                } else {
+                    profileShortId.textContent = "New User";
+                }
+            }).catch(err => {
+                console.error("Error fetching users for ID:", err);
+                profileShortId.textContent = "N/A";
+            });
         }
         
         // Admin Panel Visibility Logic

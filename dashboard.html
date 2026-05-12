@@ -22,6 +22,7 @@
                 </li>
                 <li><a href="#" data-target="tasks"><i class="ri-task-line"></i> Study Planner</a></li>
                 <li><a href="#" data-target="notes"><i class="ri-sticky-note-line"></i> Notes</a></li>
+                <li><a href="#" data-target="profile"><i class="ri-user-line"></i> Profile</a></li>
                 <li id="adminNav" style="display: none;"><a href="#" data-target="adminSection"><i class="ri-shield-user-line"></i> Admin Panel</a></li>
             </ul>
             <div class="sidebar-footer">
@@ -141,6 +142,31 @@
                                 <tr><td colspan="3" style="padding: 16px 8px; color: var(--text-muted); text-align:center;">Loading data...</td></tr>
                             </tbody>
                         </table>
+                    </div>
+                </section>
+
+                <!-- Profile Section -->
+                <section id="profile" class="page-section">
+                    <div class="d-flex justify-between align-center mb-16">
+                        <h2 style="color: var(--text-main);">My Profile</h2>
+                    </div>
+                    <div style="background: var(--surface-color); border-radius: var(--radius); padding: 32px; box-shadow: var(--shadow-sm); max-width: 600px; margin: 0 auto; text-align: center;">
+                        <div style="width: 100px; height: 100px; background: var(--primary-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; margin: 0 auto 24px;">
+                            <i class="ri-user-fill"></i>
+                        </div>
+                        <h2 id="profileName" style="margin-bottom: 8px; color: var(--text-main);">Loading...</h2>
+                        <p id="profileEmail" style="color: var(--text-muted); margin-bottom: 24px;">Loading...</p>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; text-align: left; margin-top: 32px; border-top: 1px solid var(--border-color); padding-top: 24px;">
+                            <div>
+                                <label style="font-size: 12px; color: var(--text-muted);">User ID (Unique)</label>
+                                <p id="profileShortId" style="font-weight: 600; color: var(--primary-color);">---</p>
+                            </div>
+                            <div>
+                                <label style="font-size: 12px; color: var(--text-muted);">System UID</label>
+                                <p id="profileFullUid" style="font-size: 10px; color: var(--text-muted); font-family: monospace;">---</p>
+                            </div>
+                        </div>
                     </div>
                 </section>
             </div>
