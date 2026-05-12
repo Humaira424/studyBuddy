@@ -55,9 +55,18 @@ if (signupForm) {
                 uid: userCredential.user.uid
             });
             
-            window.location.href = 'dashboard.html';
+            showAlert('signupAlert', 'Account created! Redirecting...', 'success');
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 1500);
         } catch (error) {
-            showAlert('signupAlert', error.message, 'error');
+            console.error("Signup Error:", error);
+            let errorMessage = error.message;
+            if (error.code === 'auth/email-already-in-use') errorMessage = "This email is already registered.";
+            if (error.code === 'auth/weak-password') errorMessage = "Password should be at least 6 characters.";
+            if (error.code === 'auth/invalid-email') errorMessage = "Please enter a valid email address.";
+            
+            showAlert('signupAlert', errorMessage, 'error');
             btn.textContent = "Sign Up";
             btn.disabled = false;
         }
