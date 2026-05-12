@@ -129,12 +129,18 @@ function renderTasks() {
             
         const subjectBadge = task.subject ? `<span class="badge" style="background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-main);">${task.subject}</span>` : '';
             
+        let displayDuration = task.duration;
+        if (task.duration && task.duration.includes(':')) {
+            const [h, m, s] = task.duration.split(':');
+            displayDuration = `${parseInt(h)}h ${parseInt(m)}m ${parseInt(s)}s`;
+        }
+
         const div = document.createElement('div');
         div.className = 'task-item';
         div.innerHTML = `
             <div class="task-info">
                 <h4>${task.title}</h4>
-                <p>${subjectBadge} <i class="ri-calendar-line"></i> Due: ${task.dueDate} | <i class="ri-time-line"></i> ${task.duration} | ${statusBadge}</p>
+                <p>${subjectBadge} <i class="ri-calendar-line"></i> Due: ${task.dueDate} | <i class="ri-time-line"></i> ${displayDuration} | ${statusBadge}</p>
             </div>
             <div class="actions">
                 <button onclick="toggleTaskStatus('${task.id}', '${task.status}')" class="btn-complete" title="Mark Complete/Pending">
