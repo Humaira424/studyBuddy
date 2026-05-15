@@ -18,7 +18,7 @@
                 <h2><i class="ri-book-open-line"></i> StudyBuddy</h2>
             </div>
             <ul class="nav-links">
-                <li><a href="#" class="active" data-target="overview"><i class="ri-dashboard-line"></i> Overview</a>
+                <li><a href="#" class="active" data-target="overview"><i class="ri-home-4-line"></i> Home</a>
                 </li>
                 <li><a href="#" data-target="tasks"><i class="ri-task-line"></i> Study Planner</a></li>
                 <li><a href="#" data-target="notes"><i class="ri-sticky-note-line"></i> Notes</a></li>
@@ -35,19 +35,21 @@
 
         <!-- Main Content -->
         <main class="main-content">
-            <div class="topbar">
                 <div>
                     <h3 id="userNameDisplay" style="color: var(--text-main);">Welcome, Student!</h3>
                     <p style="font-size: 12px; color: var(--text-muted);" id="currentDateDisplay"></p>
                 </div>
-                <button id="themeToggle" class="theme-toggle">
-                    <i class="ri-moon-line"></i>
-                </button>
             </div>
 
             <div class="content-area">
-                <!-- Overview Section -->
+                <!-- Home Section (Previously Overview) -->
                 <section id="overview" class="page-section active">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                        <h2 style="color: var(--text-main);">Dashboard Home</h2>
+                        <button id="themeToggle" class="theme-toggle">
+                            <i class="ri-moon-line"></i>
+                        </button>
+                    </div>
                     <div class="dashboard-grid">
                         <div class="stat-card">
                             <h3>Total Tasks</h3>
@@ -165,15 +167,9 @@
                         <h2 id="profileName" style="margin-bottom: 8px; color: var(--text-main);">Loading...</h2>
                         <p id="profileEmail" style="color: var(--text-muted); margin-bottom: 24px;">Loading...</p>
                         
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; text-align: left; margin-top: 32px; border-top: 1px solid var(--border-color); padding-top: 24px;">
-                            <div>
-                                <label style="font-size: 12px; color: var(--text-muted);">User ID (Unique)</label>
-                                <p id="profileShortId" style="font-weight: 600; color: var(--primary-color);">---</p>
-                            </div>
-                            <div>
-                                <label style="font-size: 12px; color: var(--text-muted);">System UID</label>
-                                <p id="profileFullUid" style="font-size: 10px; color: var(--text-muted); font-family: monospace;">---</p>
-                            </div>
+                        <div style="text-align: center; margin-top: 32px; border-top: 1px solid var(--border-color); padding-top: 24px;">
+                            <label style="font-size: 12px; color: var(--text-muted);">User ID (Unique)</label>
+                            <p id="profileShortId" style="font-weight: 600; color: var(--primary-color); font-size: 24px;">---</p>
                         </div>
                     </div>
                 </section>

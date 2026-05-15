@@ -1,8 +1,8 @@
 import { auth, db } from './firebase.js';
-import { 
-    createUserWithEmailAndPassword, 
-    signInWithEmailAndPassword, 
-    signOut, 
+import {
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    signOut,
     onAuthStateChanged,
     updateProfile,
     sendPasswordResetEmail
@@ -38,7 +38,7 @@ if (signupForm) {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         const btn = document.getElementById('signupBtn');
-        
+
         try {
             btn.textContent = "Signing up...";
             btn.disabled = true;
@@ -46,7 +46,7 @@ if (signupForm) {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             // Update profile with name
             await updateProfile(userCredential.user, { displayName: fullName });
-            
+
             // Save user to Firestore 'users' collection for Admin Panel tracking
             await setDoc(doc(db, 'users', userCredential.user.uid), {
                 email: email,
@@ -54,7 +54,7 @@ if (signupForm) {
                 registrationDate: new Date().toISOString(),
                 uid: userCredential.user.uid
             });
-            
+
             showAlert('signupAlert', 'Account created! Redirecting...', 'success');
             setTimeout(() => {
                 window.location.href = 'dashboard.html';
@@ -65,7 +65,7 @@ if (signupForm) {
             if (error.code === 'auth/email-already-in-use') errorMessage = "This email is already registered.";
             if (error.code === 'auth/weak-password') errorMessage = "Password should be at least 6 characters.";
             if (error.code === 'auth/invalid-email') errorMessage = "Please enter a valid email address.";
-            
+
             showAlert('signupAlert', errorMessage, 'error');
             btn.textContent = "Sign Up";
             btn.disabled = false;
@@ -91,7 +91,7 @@ if (loginForm) {
             let errorMessage = "Invalid email or password. Please try again.";
             if (error.code === 'auth/network-request-failed') errorMessage = "Network error. Please check your internet.";
             if (error.code === 'auth/too-many-requests') errorMessage = "Too many attempts. Please try again later.";
-            
+
             showAlert('loginAlert', errorMessage, 'error');
             btn.textContent = "Login";
             btn.disabled = false;
@@ -163,7 +163,7 @@ onAuthStateChanged(auth, (user) => {
                 });
                 // Sort by registration date to keep IDs consistent
                 users.sort((a, b) => new Date(a.registrationDate) - new Date(b.registrationDate));
-                
+
                 const index = users.findIndex(u => u.uid === user.uid);
                 if (index !== -1) {
                     profileShortId.textContent = `U-${(index + 1).toString().padStart(3, '0')}`;
@@ -175,7 +175,7 @@ onAuthStateChanged(auth, (user) => {
                 profileShortId.textContent = "User";
             });
         }
-        
+
         // Admin Panel Visibility Logic
         const adminNav = document.getElementById('adminNav');
         if (adminNav) {
